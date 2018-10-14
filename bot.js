@@ -395,10 +395,11 @@
 
             if(data[1] == "wu"){ //WALLET UPDATE
                 if(data[2][0]=="margin" && data[2][1] == margin_wallet.currency){
-                    margin_wallet.balance = data[2];
-                    margin_wallet.balance_available = data[2];
+                    margin_wallet.balance = data[2][2];
+                    margin_wallet.balance_available = data[2][4];
+                    let result = ((margin_wallet.balance*100)/wallet_start_balance)-100;
                     utils.log(" ");
-                    utils.log("BOT RESULTS: "+(((margin_wallet.balance*100)/wallet_start_balance)-100), "info");
+                    utils.log("BOT RESULTS: "+result.toFixed(2)+"%", "info");
                     utils.log(" ");
 
                 }

@@ -398,9 +398,9 @@
                     margin_wallet.balance = data[2][2];
                     margin_wallet.balance_available = data[2][4];
                     let result = ((margin_wallet.balance*100)/wallet_start_balance)-100;
-                    utils.log(" ");
+                    console.log(" ");
                     utils.log("BOT RESULTS: "+result.toFixed(2)+"%", "info");
-                    utils.log(" ");
+                    console.log(" ");
 
                 }
                 utils.log(JSON.stringify(margin_wallet));
@@ -451,9 +451,9 @@
             if(data[1] == "n"){ //=> NEW ORDER
                 if(order_req_id==1 && data[2][1] == "on-req" && data[2][4][3]==order_req.symbol && data[2][4][6]==order_req.amount && data[2][4][16]==order_req.price){
 
-                    utils.log("ORDER REQUESTED: "+order_req_id);
                     order_req_id = data[2][4][0]; //ORDER ID
                     order_req = 0;
+                    utils.log("ORDER REQUESTED: "+order_req_id);
                 }
             }
 

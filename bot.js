@@ -22,6 +22,7 @@
     let pair = "tIOTUSD";
     let margin_wallet = {"currency":"USD", "balance":0, "balance_available":0};
     let position = 0; 
+    let wallet_start_balance;
 
     let book_length = 1;
     let bid = 0;
@@ -52,6 +53,12 @@
 
 //INIT APLICATION
 //--------------------------------------------
+    
+    console.log(" ");
+    utils.log(":::: :::: :::: :::: :::: :::: ::::");
+    utils.log(":::: MARGIN :BOT: HAS STARTED ::::");
+    utils.log(":::: :::: :::: :::: :::: :::: ::::");
+    console.log(" ");
 
     wss_auth = new bf_ws('wss://api.bitfinex.com/ws/2');
     
@@ -197,17 +204,21 @@
                 utils.log("CROSSED UP ("+price+") ("+ema_val1+" "+ema_val2+")");
                 margin.long = price;
                 openLongPosition();
-                if(margin.short != 0){
-                    if(margin.long>margin.short){
-                        margin.shorts = (margin.shorts / (margin.long/margin.short)) / margin.fee; //short loss
-                        margin.total = (margin.total / (margin.long/margin.short)) / margin.fee;
-                    }else{
-                        margin.shorts = (margin.shorts * (margin.short/margin.long)) / margin.fee; //short gain
-                        margin.total = (margin.total * (margin.short/margin.long)) / margin.fee;
+
+                //THIS IS ONLY A SIMULATED CALCULATION, IT DOESN'T REFLECT REALITY.
+                    if(margin.short != 0){
+                        if(margin.long>margin.short){
+                            margin.shorts = (margin.shorts / (margin.long/margin.short)) / margin.fee; //short loss
+                            margin.total = (margin.total / (margin.long/margin.short)) / margin.fee;
+                        }else{
+                            margin.shorts = (margin.shorts * (margin.short/margin.long)) / margin.fee; //short gain
+                            margin.total = (margin.total * (margin.short/margin.long)) / margin.fee;
+                        }
+                        console.log(" ");
+                        utils.log("SIMULATED RESULTS");
+                        utils.log("LONGS: "+margin.longs.toFixed(2).toString().padEnd(20, ' ')+"% | SHORTS: "+margin.shorts.toFixed(2).toString().padEnd(20, ' ')+"% | TOTAL: "+margin.total.toFixed(2).toString().padEnd(20, ' ')+"%");
+                        console.log(" ");
                     }
-                    utils.log(margin.longs.toString().padEnd(20, ' ')+" - "+margin.shorts.toString().padEnd(20, ' ')+" - "+margin.total.toString().padEnd(20, ' '));
-                    console.log(" ");
-                }
             }
             cross_direction = "up";
         }else if(ema_val1 < ema_val2 && cross_direction != 'down'){
@@ -217,17 +228,21 @@
                 utils.log("CROSSED DOWN ("+price+") ("+ema_val1+" "+ema_val2+")");
                 margin.short = price;
                 openShortPosition();
-                if(margin.long != 0){
-                    if(margin.short>margin.long){
-                        margin.longs = (margin.longs * (margin.short/margin.long)) / margin.fee; //long gain
-                        margin.total = (margin.total * (margin.short/margin.long)) / margin.fee;
-                    }else{
-                        margin.longs = (margin.longs / (margin.long/margin.short)) / margin.fee; //long loss
-                        margin.total = (margin.total / (margin.long/margin.short)) / margin.fee;
+
+                //THIS IS ONLY A SIMULATADED CALCULATION, IT DOESN'T REFLECT REALITY.
+                    if(margin.long != 0){
+                        if(margin.short>margin.long){
+                            margin.longs = (margin.longs * (margin.short/margin.long)) / margin.fee; //long gain
+                            margin.total = (margin.total * (margin.short/margin.long)) / margin.fee;
+                        }else{
+                            margin.longs = (margin.longs / (margin.long/margin.short)) / margin.fee; //long loss
+                            margin.total = (margin.total / (margin.long/margin.short)) / margin.fee;
+                        }
+                        console.log(" ");
+                        utils.log("SIMULATED RESULTS");
+                        utils.log("LONGS: "+margin.longs.toFixed(2).toString().padEnd(20, ' ')+"% | SHORTS: "+margin.shorts.toFixed(2).toString().padEnd(20, ' ')+"% | TOTAL: "+margin.total.toFixed(2).toString().padEnd(20, ' ')+"%");
+                        console.log(" ");
                     }
-                    utils.log(margin.longs.toString().padEnd(20, ' ')+" - "+margin.shorts.toString().padEnd(20, ' ')+" - "+margin.total.toString().padEnd(20, ' '));
-                    console.log(" ");
-                }
             }
             cross_direction = "down";
         }
@@ -358,7 +373,7 @@
         }else if(Array.isArray(data)){//FREQUENT DATA. USUALY THE LAST CLOSED CANDLE AND THE ACTUAL CANDLE WHICH HASN'T CLOSED YET
             if(ema_calculated){                
                 calculate_live_ema(data);
-                utils.log(('EMA '+ema1+' = '+ema_val1).padEnd(35, ' ')+(' EMA '+ema2+' = '+ema_val2).padEnd(35, ' ')+ moment.unix(data[0]/1000).format("YYYY-MM-DD HH:mm"));
+                //utils.log(('EMA '+ema1+' = '+ema_val1).padEnd(35, ' ')+(' EMA '+ema2+' = '+ema_val2).padEnd(35, ' ')+ moment.unix(data[0]/1000).format("YYYY-MM-DD HH:mm"));
             }
         }
 
@@ -372,15 +387,20 @@
                     if(res[0]=="margin" && res[1] == margin_wallet.currency){
                         margin_wallet.balance = res[2];
                         margin_wallet.balance_available = res[4];
+                        wallet_start_balance = margin_wallet.balance;
                     }
                 });
                 utils.log(JSON.stringify(margin_wallet));
             }
 
             if(data[1] == "wu"){ //WALLET UPDATE
-                if(data[2]=="margin" && data[2] == margin_wallet.currency){
+                if(data[2][0]=="margin" && data[2][1] == margin_wallet.currency){
                     margin_wallet.balance = data[2];
                     margin_wallet.balance_available = data[2];
+                    utils.log(" ");
+                    utils.log("BOT RESULTS: "+(((margin_wallet.balance*100)/wallet_start_balance)-100), "info");
+                    utils.log(" ");
+
                 }
                 utils.log(JSON.stringify(margin_wallet));
             }
@@ -430,23 +450,23 @@
             if(data[1] == "n"){ //=> NEW ORDER
                 if(order_req_id==1 && data[2][1] == "on-req" && data[2][4][3]==order_req.symbol && data[2][4][6]==order_req.amount && data[2][4][16]==order_req.price){
 
+                    utils.log("ORDER REQUESTED: "+order_req_id);
                     order_req_id = data[2][4][0]; //ORDER ID
                     order_req = 0;
-                    utils.log("ORDER REQUESTED: "+order_req_id);
+                }
+            }
+
+            if(data[1] == "te"){ //=> TRADE EXECUTED
+                if(data[2][3]==order_req_id){
+                    utils.log("ORDER EXECUTED "+order_req_id);
+                    order_req_id = 0;
                 }
             }
 
             if(data[1] == "oc"){ //=> ORDER CANCELED
                 if(cancel_upon_req!=0 && data[2][0]==order_req_id){
+                    utils.log("ORDER "+order_req_id+" CANCELED UPON TIMEOUT. REQUESTING NEW ONE AGAIN");
                     order_req_again();
-                    utils.log("ORDER REQUESTED AGAIN");
-                }
-            }
-
-            if(data[1] == "te"){
-                if(data[2][3]==order_req_id){
-                    utils.log("ORDER EXECUTED "+order_req_id);
-                    order_req_id = 0;
                 }
             }
 

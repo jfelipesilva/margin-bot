@@ -22,7 +22,7 @@
     let pair = "tIOTUSD";
     let margin_wallet = {"currency":"USD", "balance":0, "balance_available":0};
     let position = 0; 
-    let wallet_start_balance;
+    let wallet_start_balance = "24.1291672";
 
     let book_length = 1;
     let bid = 0;
@@ -198,9 +198,9 @@
         let price = candle[2];
         let time = moment.unix(candle[0]/1000).format("YYYY-MM-DD HH:mm");
         if(ema_val1 > ema_val2 && cross_direction != 'up'){
-            if(cross_direction==0){
-                utils.log("BOT STARTED IN MIDDLE OF LONG POSITION.  NEED TO WAIT FOR THE EMAs TO CROSS AGAIN TO START OUR POSITION");
-            }else{
+            ////if(cross_direction==0){
+                ////utils.log("BOT STARTED IN MIDDLE OF LONG POSITION.  NEED TO WAIT FOR THE EMAs TO CROSS AGAIN TO START OUR POSITION");
+            ////}else{
                 utils.log("CROSSED UP ("+price+") ("+ema_val1+" "+ema_val2+")");
                 margin.long = price;
                 openLongPosition();
@@ -219,12 +219,12 @@
                         utils.log("LONGS: "+margin.longs.toFixed(2).toString().padEnd(20, ' ')+"% | SHORTS: "+margin.shorts.toFixed(2).toString().padEnd(20, ' ')+"% | TOTAL: "+margin.total.toFixed(2).toString().padEnd(20, ' ')+"%");
                         console.log(" ");
                     }
-            }
+            ////}
             cross_direction = "up";
         }else if(ema_val1 < ema_val2 && cross_direction != 'down'){
-            if(cross_direction==0){
-                utils.log("BOT STARTED IN MIDDLE OF SHORT POSITION.  NEED TO WAIT FOR THE EMAs TO CROSS AGAIN TO START OUR POSITION");
-            }else{
+            ////if(cross_direction==0){
+                ////utils.log("BOT STARTED IN MIDDLE OF SHORT POSITION.  NEED TO WAIT FOR THE EMAs TO CROSS AGAIN TO START OUR POSITION");
+            ////}else{
                 utils.log("CROSSED DOWN ("+price+") ("+ema_val1+" "+ema_val2+")");
                 margin.short = price;
                 openShortPosition();
@@ -243,7 +243,7 @@
                         utils.log("LONGS: "+margin.longs.toFixed(2).toString().padEnd(20, ' ')+"% | SHORTS: "+margin.shorts.toFixed(2).toString().padEnd(20, ' ')+"% | TOTAL: "+margin.total.toFixed(2).toString().padEnd(20, ' ')+"%");
                         console.log(" ");
                     }
-            }
+            ////}
             cross_direction = "down";
         }
     };
@@ -387,7 +387,7 @@
                     if(res[0]=="margin" && res[1] == margin_wallet.currency){
                         margin_wallet.balance = res[2];
                         margin_wallet.balance_available = res[4];
-                        wallet_start_balance = margin_wallet.balance;
+                        //wallet_start_balance = margin_wallet.balance;
                     }
                 });
                 utils.log(JSON.stringify(margin_wallet));

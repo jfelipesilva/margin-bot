@@ -134,7 +134,7 @@
         const candles_subscription = { 
             event: 'subscribe', 
             channel: 'candles', 
-            key: 'trade:1m:'+pair
+            key: 'trade:1h:'+pair
         };
 
         const ticker_subscription = { 
@@ -265,7 +265,7 @@
                 utils.log("ONE LONG POSITION ALREADY OPENED");
             }else{
                 let price = bid;
-                let amount = Math.floor((margin_wallet.balance/2)/price);
+                let amount = Math.floor((margin_wallet.balance*0.95)/price);
                 if(position != 0 && position.amount < 0) amount = amount+Math.abs(position.amount);
 
                 order_req = {
@@ -301,7 +301,7 @@
                 utils.log("ONE SHORT POSITION ALREADY OPENED");
             }else{
                 let price = ask;
-                let amount = Math.floor((margin_wallet.balance/2)/price);
+                let amount = Math.floor((margin_wallet.balance*0.95)/price);
                 if(position != 0 && position.amount > 0) amount = amount+position.amount;
 
                 order_req = {

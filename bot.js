@@ -32,8 +32,8 @@
     let order_req_id = 0;
     let cancel_upon_req = 0;
 
-    let ema1 = 27; //should be the lower value
-    let ema2 = 58;
+    let ema1 = 37; //should be the lower value
+    let ema2 = 81;
     let ema_val1 = 0;
     let ema_val2 = 0;
     let ema_calculated = 0;

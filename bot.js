@@ -32,23 +32,13 @@
     let order_req_id = 0;
     let cancel_upon_req = 0;
 
-    let ema1 = 21; //should be the lower value
-    let ema2 = 129;
+    let ema1 = 37; //should be the lower value
+    let ema2 = 81;
     let ema_val1 = 0;
     let ema_val2 = 0;
     let ema_calculated = 0;
     let last_calculated_candle = 0;
     let cross_direction = 0;
-
-    let margin = {
-        long: 0,
-        short: 0,
-        shorts: 100,
-        longs: 100,
-        total: 100,
-        fee: 1.004  //as the bot run both ways, longs and shorts, we double the fee here so it simulates the closing and opening positions with only one fee.
-    }
-
 
 
 //INIT APLICATION
@@ -202,23 +192,8 @@
                 ////utils.log("BOT STARTED IN MIDDLE OF LONG POSITION.  NEED TO WAIT FOR THE EMAs TO CROSS AGAIN TO START OUR POSITION");
             ////}else{
                 utils.log("CROSSED UP ("+price+") ("+ema_val1+" "+ema_val2+")");
-                margin.long = price / margin.fee;
                 openLongPosition();
 
-                //THIS IS ONLY A SIMULATED CALCULATION, IT DOESN'T REFLECT REALITY.
-                    if(margin.short != 0){
-                        if(margin.long>margin.short){
-                            margin.shorts = (margin.shorts / (margin.long/margin.short)); //short loss
-                            margin.total = (margin.total / (margin.long/margin.short));
-                        }else{
-                            margin.shorts = (margin.shorts * (margin.short/margin.long)); //short gain
-                            margin.total = (margin.total * (margin.short/margin.long));
-                        }
-                        console.log(" ");
-                        utils.log("SIMULATED RESULTS");
-                        utils.log("LONGS: "+margin.longs.toFixed(2).toString().padEnd(20, ' ')+"% | SHORTS: "+margin.shorts.toFixed(2).toString().padEnd(20, ' ')+"% | TOTAL: "+margin.total.toFixed(2).toString().padEnd(20, ' ')+"%");
-                        console.log(" ");
-                    }
             ////}
             cross_direction = "up";
         }else if(ema_val1 < ema_val2 && cross_direction != 'down'){
@@ -226,23 +201,8 @@
                 ////utils.log("BOT STARTED IN MIDDLE OF SHORT POSITION.  NEED TO WAIT FOR THE EMAs TO CROSS AGAIN TO START OUR POSITION");
             ////}else{
                 utils.log("CROSSED DOWN ("+price+") ("+ema_val1+" "+ema_val2+")");
-                margin.short = price * margin.fee;
                 openShortPosition();
 
-                //THIS IS ONLY A SIMULATADED CALCULATION, IT DOESN'T REFLECT REALITY.
-                    if(margin.long != 0){
-                        if(margin.short>margin.long){
-                            margin.longs = (margin.longs * (margin.short/margin.long)); //long gain
-                            margin.total = (margin.total * (margin.short/margin.long));
-                        }else{
-                            margin.longs = (margin.longs / (margin.long/margin.short)); //long loss
-                            margin.total = (margin.total / (margin.long/margin.short));
-                        }
-                        console.log(" ");
-                        utils.log("SIMULATED RESULTS");
-                        utils.log("LONGS: "+margin.longs.toFixed(2).toString().padEnd(20, ' ')+"% | SHORTS: "+margin.shorts.toFixed(2).toString().padEnd(20, ' ')+"% | TOTAL: "+margin.total.toFixed(2).toString().padEnd(20, ' ')+"%");
-                        console.log(" ");
-                    }
             ////}
             cross_direction = "down";
         }

@@ -224,7 +224,7 @@
             if(position != 0 && position.amount > 0){
                 utils.log("ONE LONG POSITION ALREADY OPENED");
             }else{
-                let price = bid;
+                let price = ask;
                 let amount = Math.floor((margin_wallet.balance*0.95)/price);
                 if(position != 0 && position.amount < 0) amount = amount+Math.abs(position.amount);
 
@@ -260,7 +260,7 @@
             if(position != 0 && position.amount < 0){
                 utils.log("ONE SHORT POSITION ALREADY OPENED");
             }else{
-                let price = ask;
+                let price = bid;
                 let amount = Math.floor((margin_wallet.balance*0.95)/price);
                 if(position != 0 && position.amount > 0) amount = amount+position.amount;
 

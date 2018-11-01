@@ -308,6 +308,35 @@
         cancel_upon_req = 0;
     };
 
+    pushPowerBI = (price) => {
+
+        const loop = [['EMA1',ema_val1],['EMA2',ema_val2],['IOTA',price]];
+        let postData = [];
+
+        loop.forEach(function(res, i){
+
+            postData = [{
+               'price':price,
+               'graphLabel':res[0],
+               'graphValue':res[1],
+               'time': moment().format()
+            }];
+
+            //console.log(postData);
+
+            request.post(
+                {
+                    url: 'https://api.powerbi.com/beta/bc41373d-f70e-4c65-8c3e-0f28c45a1d0e/datasets/cef5bc47-de13-4933-b12c-b7adb594c98f/rows?key=HdIO2PedZ0FwOKgxj1rZjZXasY6luM6LLSR5W3E%2BzPOMWcj0AArFShZ0fJ04ILtYLCBk89O73UBAeZ4y7OaBqA%3D%3D',
+                    body: postData,
+                    json: true
+                },
+                function (err, httpResponse, body) {
+                    //console.log(err, body);
+                }
+            );
+        });
+    }
+
 
 //LISTENNERS
 //--------------------------------------------
@@ -445,6 +474,7 @@
             let spread = "SPREAD: "+(bid/ask);
             utils.log(buy.padEnd(25,' ')+" "+sell.padEnd(25, ' ')+" "+spread);
             */
+            pushPowerBI(data[6]);
 
         }
     };

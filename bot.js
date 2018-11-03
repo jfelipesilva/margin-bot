@@ -23,10 +23,12 @@
     let margin_wallet = {"currency":"USD", "balance":0, "balance_available":0};
     let position = 0; 
     let wallet_start_balance = "24.1291672";
+    let bot_total_result = 0;
 
     let book_length = 1;
     let bid = 0;
     let ask = 0;
+    let last_price = 0;
 
     let order_req = 0;
     let order_req_id = 0;
@@ -39,6 +41,19 @@
     let ema_calculated = 0;
     let last_calculated_candle = 0;
     let cross_direction = 0;
+
+    let bot_data = {
+        'price':last_price,
+        'wallet':margin_wallet.balance,
+        'wallet_before':wallet_start_balance,
+        'wallet_partial':0,
+        'bot_result':0,
+        'position_base_price':0,
+        'position_amount':0,
+        'position_percent':0,
+        'position_result':0
+    }
+
 
 
 //INIT APLICATION
@@ -308,34 +323,108 @@
         cancel_upon_req = 0;
     };
 
-    pushPowerBI = (price) => {
+    pushGraphToPowerBI = () => {
 
-        const loop = [['EMA1',ema_val1],['EMA2',ema_val2],['IOTA',price]];
-        let postData = [];
+        if(ema_val1>0){
+            const loop = [['EMA1',ema_val1],['EMA2',ema_val2],['IOTA',last_price]];
+            let postData = [];
 
-        loop.forEach(function(res, i){
+            loop.forEach(function(res, i){
 
-            postData = [{
-               'price':price,
-               'graphLabel':res[0],
-               'graphValue':res[1],
-               'time': moment().format()
-            }];
+                postData = [{
+                   'graphLabel':res[0],
+                   'graphValue':res[1],
+                   'time': moment().format()
+                }];
 
-            //console.log(postData);
+                //console.log(postData);
 
-            request.post(
-                {
-                    url: 'https://api.powerbi.com/beta/bc41373d-f70e-4c65-8c3e-0f28c45a1d0e/datasets/cef5bc47-de13-4933-b12c-b7adb594c98f/rows?key=HdIO2PedZ0FwOKgxj1rZjZXasY6luM6LLSR5W3E%2BzPOMWcj0AArFShZ0fJ04ILtYLCBk89O73UBAeZ4y7OaBqA%3D%3D',
-                    body: postData,
-                    json: true
-                },
-                function (err, httpResponse, body) {
-                    //console.log(err, body);
-                }
-            );
-        });
-    }
+                request.post(
+                    {
+                        url: 'https://api.powerbi.com/beta/bc41373d-f70e-4c65-8c3e-0f28c45a1d0e/datasets/cef5bc47-de13-4933-b12c-b7adb594c98f/rows?key=HdIO2PedZ0FwOKgxj1rZjZXasY6luM6LLSR5W3E%2BzPOMWcj0AArFShZ0fJ04ILtYLCBk89O73UBAeZ4y7OaBqA%3D%3D',
+                        body: postData,
+                        json: true
+                    },
+                    function (err, httpResponse, body) {
+                        //console.log(err, body);
+                    }
+                );
+            });
+        }
+
+    };
+
+    pushDataToPowerBI = () => {
+
+        let postData = [bot_data];
+
+        //console.log(postData);
+
+        request.post(
+            {
+                url: 'https://api.powerbi.com/beta/bc41373d-f70e-4c65-8c3e-0f28c45a1d0e/datasets/0afeb3a7-6ef3-4173-a487-ace5ec4edd2f/rows?key=EcOhAIs4K5RojM9DAotmbS%2BPhIrkgDl2q4bjof9LP6QByOIkQkd8zbXKzAdrxsY4kBJt2vyw4SBJytwYIhy7%2Bw%3D%3D',
+                body: postData,
+                json: true
+            },
+            function (err, httpResponse, body) {
+                //console.log(err, body);
+            }
+        );
+
+        setTimeout(pushDataToPowerBI,60000); //each minute
+    };
+
+    pushWalletToPowerBI = () => {
+
+        let postData = [{
+            'wallet':bot_data.wallet_partial,
+            'time': moment().format()
+        }];
+
+        //console.log(postData);
+
+        request.post(
+            {
+                url: 'https://api.powerbi.com/beta/bc41373d-f70e-4c65-8c3e-0f28c45a1d0e/datasets/4a83451a-3991-429e-9bb0-57822850ce6f/rows?key=N82xtyomrHsIu6UqkYfBWmVT75FIKuzkRiVSHMezCfulZC8rLOUL8T2tO0nv2BODfSZ6II6v0n009aGcoWP%2B%2BQ%3D%3D',
+                body: postData,
+                json: true
+            },
+            function (err, httpResponse, body) {
+                //console.log(err, body);
+            }
+        );
+
+        setTimeout(pushDataToPowerBI,3600000); //hourly
+    };
+
+    calcBotResults = () => {
+        bot_total_result = (margin_wallet.balance*100/wallet_start_balance)-100;
+        bot_total_result = bot_total_result.toFixed(2);
+    };
+
+    updateBotData = () => {
+
+        let position_percent = 0;
+        if(position.amount > 0){
+            position_percent = ((last_price/1.001)*100/(position.base_price*1.001))-100;
+        }else{
+            position_percent = ((last_price*1.001)*100/(position.base_price/1.001))-100;
+        }
+
+        let wallet_partial = margin_wallet.balance*((position_percent/100)+1);
+
+        bot_data.price=last_price;
+        bot_data.wallet=margin_wallet.balance;
+        bot_data.wallet_before=wallet_start_balance;
+        bot_data.wallet_partial=wallet_partial;
+        bot_data.bot_result=bot_total_result;
+        bot_data.position_base_price=position.base_price;
+        bot_data.position_amount=position.amount;
+        bot_data.position_percent=position_percent;
+        bot_data.position_result=wallet_partial-margin_wallet.balance;
+
+        setTimeout(updateBotData,10000);
+    };
 
 
 //LISTENNERS
@@ -354,6 +443,9 @@
                 utils.log("FIRST CANDLE "+moment.unix(firstR[0]/1000).format("YYYY-MM-DD HH:mm")+" WITH CLOSED PRICE AT "+firstR[4]);
                 */
                 step3(data);
+                updateBotData();
+                pushDataToPowerBI();
+                pushWalletToPowerBI();
             }else{
                 utils.log("INSUFICIENT DATA TO CALCULATE THE EMA. CHECK THE CODE AND TRY AGAIN");
                 utils.log("LOGOFF");
@@ -377,6 +469,7 @@
                         margin_wallet.balance = res[2];
                         margin_wallet.balance_available = res[4];
                         //wallet_start_balance = margin_wallet.balance;
+                        calcBotResults();
                     }
                 });
                 utils.log(JSON.stringify(margin_wallet));
@@ -386,9 +479,9 @@
                 if(data[2][0]=="margin" && data[2][1] == margin_wallet.currency){
                     margin_wallet.balance = data[2][2];
                     margin_wallet.balance_available = data[2][4];
-                    let result = ((margin_wallet.balance*100)/wallet_start_balance)-100;
                     console.log(" ");
-                    utils.log("BOT RESULTS: "+result.toFixed(2)+"%", "info");
+                    calcBotResults();
+                    utils.log("BOT RESULTS: "+bot_total_result+"%", "info");
                     console.log(" ");
 
                 }
@@ -466,15 +559,31 @@
     ticker_channel_listener = (data) => {
         if(data != "hb"){
 
+            /* data = 
+              [
+                BID,
+                BID_SIZE,
+                ASK,
+                ASK_SIZE,
+                DAILY_CHANGE,
+                DAILY_CHANGE_PERC,
+                LAST_PRICE,
+                VOLUME,
+                HIGH,
+                LOW
+              ]
+            */
+
             ask = data[0];
             bid = data[2];
+            last_price = data[6];
             /*
             let sell = "SELL FOR: "+bid;
             let buy = "BUY FOR: "+ask;
             let spread = "SPREAD: "+(bid/ask);
             utils.log(buy.padEnd(25,' ')+" "+sell.padEnd(25, ' ')+" "+spread);
             */
-            pushPowerBI(data[6]);
+            pushGraphToPowerBI();
 
         }
     };

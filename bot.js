@@ -394,7 +394,7 @@
             }
         );
 
-        setTimeout(pushDataToPowerBI,3600000); //hourly
+        setTimeout(pushWalletToPowerBI,3600000); //hourly
     };
 
     calcBotResults = () => {

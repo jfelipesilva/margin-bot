@@ -408,7 +408,7 @@
         if(position.amount > 0){
             position_percent = ((last_price/1.001)*100/(position.base_price*1.001))-100;
         }else{
-            position_percent = ((last_price*1.001)*100/(position.base_price/1.001))-100;
+            position_percent = (((last_price*1.001)*100/(position.base_price/1.001))-100)*(-1);
         }
 
         let wallet_partial = margin_wallet.balance*((position_percent/100)+1);

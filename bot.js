@@ -54,6 +54,30 @@
         'position_result':0
     }
 
+    let authChanTimeout = 0;
+    let ticketChanTimeout = 0;
+    let candlesChanTimeout = 0;
+    let defaut_timeout = 11; //SECONDS
+
+    setInterval(function(){
+        authChanTimeout++;
+        ticketChanTimeout++;
+        candlesChanTimeout++;
+
+        if(authChanTimeout>defaut_timeout){
+            teminateApplication('Auth Channel Timeout');
+        }
+
+        if(ticketChanTimeout>defaut_timeout){
+            teminateApplication('Ticker Channel Timeout');
+        }
+
+        if(candlesChanTimeout>defaut_timeout){
+            teminateApplication('Candles Channel Timeout');
+        }
+
+    },1000);
+
 
 
 //INIT APLICATION
@@ -425,13 +449,18 @@
 
         setTimeout(updateBotData,10000);
     };
+    
+    teminateApplication = (msg) => {
+        utils.log('APPLICATION WAS TERMINATED :: '+msg, 'danger');
+        process.exit(1);
+    };
 
 
 //LISTENNERS
 //--------------------------------------------
 
     candles_channel_listener = (data) => {
-
+        candlesChanTimeout = 0;
         if(Array.isArray(data[2])){ //USUALY THE FIRST DATA RECEIVED FROM CHANNEL IS AN ARRAY OF LAST 240 CANDLES
             if(!ema_calculated && data.length > ema2){
                 /*
@@ -461,6 +490,7 @@
     };
 
     auth_channel_listener = (data) => {
+        authChanTimeout = 0;
         if(data[1] != "hb"){ //HEARTBEAT
 
             if(data[1] == "ws"){ //WALLET SNAPSHOT
@@ -557,6 +587,7 @@
     }
 
     ticker_channel_listener = (data) => {
+        ticketChanTimeout = 0;
         if(data != "hb"){
 
             /* data = 

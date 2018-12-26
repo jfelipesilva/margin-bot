@@ -122,16 +122,18 @@
         );
     };
 
-    positionsClosed = (position) => {
+    positionsUpdatesPB = (position) => {
 
         let postData = [{
             'datetime': moment().format(),
             'symbol':position[0],
+            'status':position[1],
             'amount':position[2],
             'base_price':position[3],
             'margin_funding':position[4],
             'pl':position[6],
-            'pl_perc':position[7]
+            'pl_perc':position[7],
+            'leverage':position[8]
         }];
 
         request.post(
@@ -198,10 +200,8 @@
                 utils.log(JSON.stringify(margin_wallet));
             }
 
-            if(data[1] == "pc"){//=> POSITION CLOSE
-                if(data[2][1] == "CLOSED"){
-                    positionsClosed(data[2]);
-                }
+            if(data[1] == "pc" || data[1] == "pu" || data[1] == "pn"){//=> POSITION
+                positionsUpdatesPB(data[2]);
             }
 
         }  

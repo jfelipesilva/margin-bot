@@ -188,7 +188,7 @@
                         let balance_out = Math.abs(position.amount*trade.price);
                         let gain_loss = balance_out * postTrade[0].trade_result / 100;
                         if(postTrade[0].trade_result < 0){ //loss
-                            gain_loss = (balance_out / postTrade[0].trade_result * 100)*(-1);
+                            gain_loss = gain_loss*(-1);
                         }
                         postTrade[0].wallet_result = (margin_wallet.balance/(margin_wallet.balance+gain_loss))-1;
 

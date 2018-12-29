@@ -16,8 +16,25 @@
     let wss_auth = {};
     let CHAN_ID_auth = "";
 
-    let margin_wallet = {"currency":"USD", "balance":0, "balance_available":0};
+    let setup = {
+        //minimum which you want do extract from the market each month
+        living_cost: 2000, 
+
+        //if you dont have much money and want to simulate from this value what would be your results
+        simulate_balance: 150 
+    };
+
+    let results = {
+        simulated_balance: 0
+    };
+
+    let tradeControl = {'active':false };
+    let openedPositions = [];
+
+
+    let margin_wallet = {'currency':'USD', 'balance':0, 'balance_available':0};
     let wallet_start_balance = "150";
+
 
     let authChanTimeout = 0;
     let defaut_timeout = 30; //SECONDS
@@ -106,7 +123,7 @@
 
         let postData = [{
             'balance':margin_wallet.balance,
-            'datetime': moment().format(),
+            'datetime': moment().utc().format(),
             'percentage': bot_total_result
         }];
 
@@ -125,7 +142,7 @@
     positionsUpdatesPB = (position) => {
 
         let postData = [{
-            'datetime': moment().format(),
+            'datetime': moment().utc().format(),
             'symbol':position[0],
             'status':position[1],
             'amount':position[2],
@@ -149,7 +166,62 @@
 
     };
 
+    tradeExecuted = (trade) => {
+        openedPositions.forEach(function(position,i){
+            if(position.closethis && position.symbol==trade.symbol){
+                if(Math.abs(position.amount)==Math.abs(trade.amount)){
+
+                    let postTrade = [{
+                        'datetime': moment().utc().format(),
+                        'symbol':position.symbol,
+                        'amount':position.amount,
+                        'price_in':position.base_price,
+                        'price_out':trade.price,
+                        'trade_result':(((trade.price/position.base_price)-1)*100)
+                    }];
+
+                    if(position.amount < 0){ //short
+                        postTrade[0].trade_result = postTrade[0].trade_result*(-1);
+                    }
+
+                    //WALLET RESULT
+                        let balance_out = Math.abs(position.amount*trade.price);
+                        let balance_in = balance_out * postTrade[0].trade_result / 100;
+                        let balance_diff = balance_out - balance_in;
+                        if(postTrade[0].trade_result < 0){ //loss
+                            balance_in = balance_out / postTrade[0].trade_result * 100;
+                            balance_diff = balance_in - balance_out;
+                        }
+                        postTrade[0].wallet_result = margin_wallet.balance/balance_diff;
+
+                    request.post(
+                        {
+                            url: 'https://api.powerbi.com/beta/af3bb3b0-5631-41bb-8218-2fc84f588325/datasets/9f185bae-9e78-47d1-b29f-4485feb58de7/rows?key=6UcfMYMHAHAqJDtZsMLD%2FTIYpxzcK%2FFfOaD%2Bk%2BxZV2Tb8y%2BWIP%2FJ3NqIReAwniv9L12iBDo0uDhfGAuQxP1mDw%3D%3D',
+                            body: postTrade,
+                            json: true
+                        },
+                        function (err, httpResponse, body) {
+                            //console.log(err, body);
+                        }
+                    );
+
+                    openedPositions.splice(i,1);
+                }
+            }
+        });
+    };
+
+    positionClosed = (symbol) => {
+        openedPositions.forEach(function(position,i){
+            if(!position.closethis && position.symbol == symbol){
+                openedPositions[i].closethis = true;
+                //NOW WAIT FOR TRADE EXECUTION (TE) TO COMPLETE THIS TRANSACTION
+            }
+        });
+    };
     
+    walletUpdated = () => {};
+
     teminateApplication = (msg) => {
         utils.log('APPLICATION WAS TERMINATED :: '+msg, 'danger');
         process.exit(1);
@@ -177,9 +249,13 @@
 
     auth_channel_listener = (data) => {
         authChanTimeout = 0;
+
+        //in a trade execution, first triggers the position events (pn,pu,pc), then trades events (te,tu) and then wallet events (wu)
+
         if(data[1] != "hb"){ //HEARTBEAT
 
             if(data[1] == "ws"){ //WALLET SNAPSHOT
+                utils.log("::ws::");
                 data[2].forEach(function(res, i){
                     if(res[0]=="margin" && res[1] == margin_wallet.currency){
                         margin_wallet.balance = res[2];
@@ -191,6 +267,7 @@
             }
 
             if(data[1] == "wu"){ //WALLET UPDATE
+                utils.log("::wu::");
                 if(data[2][0]=="margin" && data[2][1] == margin_wallet.currency){
                     margin_wallet.balance = data[2][2];
                     margin_wallet.balance_available = data[2][4];
@@ -200,8 +277,60 @@
                 utils.log(JSON.stringify(margin_wallet));
             }
 
+
+            if(data[1] == "ps"){//=> POSITIONS
+                utils.log("::ps::");
+                data[2].forEach(function(res,i){
+                    if(res[1] == "ACTIVE"){
+                        openedPositions.push({
+                            "symbol":res[0],
+                            "status":res[1],
+                            "amount":res[2],
+                            "base_price":res[3],
+                            "closethis":false
+                        });
+                    }
+                });
+            }
+
             if(data[1] == "pc" || data[1] == "pu" || data[1] == "pn"){//=> POSITION
                 positionsUpdatesPB(data[2]);
+            }
+
+            if(data[1] == "pn"){
+                utils.log("::pn::");
+                openedPositions.push({
+                    "symbol":data[2][0],
+                    "status":data[2][1],
+                    "amount":data[2][2],
+                    "base_price":data[2][3],
+                    "closethis":false
+                });
+            }
+
+            if(data[1] == "pu"){
+                utils.log("::pu::");
+                openedPositions.forEach(function(position,i){
+                    if(openedPositions[i].symbol == data[2][0]){
+                        openedPositions[i].amount = data[2][2];
+                        openedPositions[i].base_price = data[2][3];
+                    }
+                });
+            }
+
+            if(data[1] == "pc"){
+                utils.log("::pc::");
+                positionClosed(data[2][0]);
+            }
+
+            if(data[1] == "te"){ //=> TRADE EXECUTED
+                utils.log("::te::");
+                tradeExecuted({
+                    'symbol':data[2][1],
+                    'amount':data[2][4],
+                    'price':data[2][5]
+                });
+                
             }
 
         }  

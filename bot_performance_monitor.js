@@ -186,13 +186,11 @@
 
                     //WALLET RESULT
                         let balance_out = Math.abs(position.amount*trade.price);
-                        let balance_in = balance_out * postTrade[0].trade_result / 100;
-                        let balance_diff = balance_out - balance_in;
+                        let gain_loss = balance_out * postTrade[0].trade_result / 100;
                         if(postTrade[0].trade_result < 0){ //loss
-                            balance_in = balance_out / postTrade[0].trade_result * 100;
-                            balance_diff = balance_in - balance_out;
+                            gain_loss = (balance_out / postTrade[0].trade_result * 100)*(-1);
                         }
-                        postTrade[0].wallet_result = margin_wallet.balance/balance_diff;
+                        postTrade[0].wallet_result = (margin_wallet.balance/(margin_wallet.balance+gain_loss))-1;
 
                     request.post(
                         {

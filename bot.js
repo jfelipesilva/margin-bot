@@ -22,7 +22,7 @@
     let pair = "tIOTUSD";
     let margin_wallet = {"currency":"USD", "balance":0, "balance_available":0};
     let position = 0; 
-    let wallet_start_balance = "24.1291672";
+    let wallet_start_balance = "115.48";
     let bot_total_result = 0;
 
     let book_length = 1;

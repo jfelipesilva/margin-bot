@@ -435,7 +435,7 @@
             position_percent = (((last_price*1.001)*100/(position.base_price/1.001))-100)*(-1);
         }
 
-        let wallet_partial = (last_price*position.amount)*((position_percent/100)+1);
+        let wallet_partial = margin_wallet.balance + ((last_price*position.amount*((position_percent/100)+1))-(position.base_price*position.amount));
 
         bot_data.price=last_price;
         bot_data.wallet=margin_wallet.balance;

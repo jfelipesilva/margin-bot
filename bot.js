@@ -435,7 +435,17 @@
             position_percent = (((last_price*1.001)*100/(position.base_price/1.001))-100)*(-1);
         }
 
-        let wallet_partial = margin_wallet.balance + ((last_price*position.amount*((position_percent/100)+1))-(position.base_price*position.amount));
+        let entrance = position.amount*position.base_price;
+        let actual = position.amout*last_price;
+        let raw_partion = actual - entrance;
+
+        let tax_entrance = entrance / 1000 //0,1%
+        let tax_actual = actual / 1000 //0,1%
+        let taxes = tax_entrance + tax_actual;
+
+        let position_result = raw_partion-taxes;
+
+        let wallet_partial = margin_wallet.balance+position_result;
 
         bot_data.price=last_price;
         bot_data.wallet=margin_wallet.balance;
@@ -445,7 +455,7 @@
         bot_data.position_base_price=position.base_price;
         bot_data.position_amount=position.amount;
         bot_data.position_percent=position_percent;
-        bot_data.position_result=wallet_partial-margin_wallet.balance;
+        bot_data.position_result=position_result;
 
         setTimeout(updateBotData,10000);
     };

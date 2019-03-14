@@ -436,12 +436,18 @@
         }
 
         let entrance = position.amount*position.base_price;
+        utils.log('entrance: '+entrance);
         let actual = position.amout*last_price;
+        utils.log('actual: '+actual);
         let raw_partion = actual - entrance;
+        utils.log('raw_partion: '+raw_partion);
 
         let tax_entrance = entrance / 1000 //0,1%
+        utils.log('tax_entrance: '+tax_entrance);
         let tax_actual = actual / 1000 //0,1%
+        utils.log('tax_actual: '+tax_actual);
         let taxes = tax_entrance + tax_actual;
+        utils.log('taxes: '+taxes);
 
         let position_result = raw_partion-taxes;
 

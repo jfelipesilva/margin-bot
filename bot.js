@@ -437,7 +437,7 @@
 
         let entrance = position.amount*position.base_price;
         utils.log('entrance: '+entrance);
-        let actual = position.amout*last_price;
+        let actual = position.amount*last_price;
         utils.log('actual: '+actual);
         let raw_partion = actual - entrance;
         utils.log('raw_partion: '+raw_partion);

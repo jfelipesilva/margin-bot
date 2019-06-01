@@ -78,6 +78,12 @@
 
     },1000);
 
+    setInterval(function(){
+        let now = new Date();
+        let minute = now.getMinutes();
+        if(minute == 30) teminateApplication('Restarting bot at minute 30');
+    },60000);
+
 
 
 //INIT APLICATION

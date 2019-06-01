@@ -2,6 +2,7 @@
 
 sftp-config.json
 _configs.js
+tests.js
 
 node_modules
 vendor

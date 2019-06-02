@@ -251,6 +251,10 @@
             }
             cross_direction = "down";
         }
+
+        if(Math.abs(ema_val1-ema_val2) < 0.008){
+            sendMessageToTelegram("EMAs CLOSE TO CROSS\nEMA1 = "+ema_val1+"\nEMA2 = "+ema_val2+"\nPRICE = "+price);
+        }
     };
 
     cancelOrder = (id) => {
@@ -471,6 +475,26 @@
         process.exit(1);
     };
 
+    sendMessageToTelegram = (msg) => {
+
+        postData = {
+            'chat_id':'482786879',
+            'text':msg
+        };
+
+        request.post(
+            {
+                url: 'https://api.telegram.org/bot456649759:AAEgwbZ0-B0KFw0RZp1f4fPZGOxtejBYcaI/sendMessage',
+                body: postData,
+                json: true
+            },
+            function (err, httpResponse, body) {
+                //console.log(err, body);
+            }
+        );
+
+    };
+
 
 //LISTENNERS
 //--------------------------------------------
@@ -582,6 +606,7 @@
                     order_req_id = data[2][4][0]; //ORDER ID
                     order_req = 0;
                     utils.log("ORDER REQUESTED: "+order_req_id);
+                    sendMessageToTelegram("ORDER REQUESTED: "+order_req_id+"\nAMOUNT: "+order_req.amount+"\nPRICE: "+order_req.price);
                 }
             }
 
@@ -589,12 +614,14 @@
                 if(data[2][3]==order_req_id){
                     utils.log("ORDER EXECUTED "+order_req_id);
                     order_req_id = 0;
+                    sendMessageToTelegram("ORDER EXECUTED: "++order_req_id+"\nAMOUNT: "+order_req.amount+"\nPRICE: "+order_req.price);
                 }
             }
 
             if(data[1] == "oc"){ //=> ORDER CANCELED
                 if(cancel_upon_req!=0 && data[2][0]==order_req_id){
                     utils.log("ORDER "+order_req_id+" CANCELED UPON TIMEOUT. REQUESTING NEW ONE AGAIN");
+                    sendMessageToTelegram("ORDER "+order_req_id+" CANCELED UPON TIMEOUT. REQUESTING NEW ONE AGAIN");
                     order_req_again();
                 }
             }

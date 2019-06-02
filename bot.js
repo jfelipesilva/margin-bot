@@ -614,7 +614,7 @@
                 if(data[2][3]==order_req_id){
                     utils.log("ORDER EXECUTED "+order_req_id);
                     order_req_id = 0;
-                    sendMessageToTelegram("ORDER EXECUTED: "++order_req_id+"\nAMOUNT: "+order_req.amount+"\nPRICE: "+order_req.price);
+                    sendMessageToTelegram("ORDER EXECUTED: "+order_req_id+"\nAMOUNT: "+order_req.amount+"\nPRICE: "+order_req.price);
                 }
             }
 

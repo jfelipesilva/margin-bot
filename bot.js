@@ -252,7 +252,7 @@
             cross_direction = "down";
         }
 
-        if(Math.abs(ema_val1-ema_val2) < 0.008){
+        if(Math.abs(ema_val1-ema_val2) < 0.0008){
             sendMessageToTelegram("EMAs CLOSE TO CROSS\nEMA1 = "+ema_val1+"\nEMA2 = "+ema_val2+"\nPRICE = "+price);
         }
     };

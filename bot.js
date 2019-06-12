@@ -603,8 +603,8 @@
             if(data[1] == "n"){ //=> NEW ORDER
                 if(order_req_id==1 && data[2][1] == "on-req" && data[2][4][3]==order_req.symbol && data[2][4][6]==order_req.amount && data[2][4][16]==order_req.price){
 
-                    sendMessageToTelegram("ORDER REQUESTED: "+order_req_id+"\nAMOUNT: "+order_req.amount+"\nPRICE: "+order_req.price);
                     order_req_id = data[2][4][0]; //ORDER ID
+                    sendMessageToTelegram("ORDER REQUESTED: "+order_req_id+"\nAMOUNT: "+order_req.amount+"\nPRICE: "+order_req.price);
                     order_req = 0;
                     utils.log("ORDER REQUESTED: "+order_req_id);
                 }
@@ -613,8 +613,8 @@
             if(data[1] == "te"){ //=> TRADE EXECUTED
                 if(data[2][3]==order_req_id){
                     utils.log("ORDER EXECUTED "+order_req_id);
-                    order_req_id = 0;
                     sendMessageToTelegram("ORDER EXECUTED: "+order_req_id+"\nAMOUNT: "+order_req.amount+"\nPRICE: "+order_req.price);
+                    order_req_id = 0;
                 }
             }
 

@@ -237,21 +237,22 @@
         let price = candle[2];
         let time = moment.unix(candle[0]/1000).format("YYYY-MM-DD HH:mm");
         if(ema_val1 > ema_val2 && cross_direction != 'up'){
-            // if(cross_direction==0){
-            //     utils.log("BOT STARTED IN MIDDLE OF LONG POSITION.  NEED TO WAIT FOR THE EMAs TO CROSS AGAIN TO START OUR POSITION");
-            // }else{
+            if(cross_direction==0){
+                utils.log("BOT STARTED IN MIDDLE OF LONG POSITION.  NEED TO WAIT FOR THE EMAs TO CROSS AGAIN TO START OUR POSITION");
+            }else{
                 utils.log("CROSSED UP ("+price+") ("+ema_val1+" "+ema_val2+")");
                 openLongPosition();
-            //}
+
+            }
             cross_direction = "up";
         }else if(ema_val1 < ema_val2 && cross_direction != 'down'){
-            // if(cross_direction==0){
-            //     utils.log("BOT STARTED IN MIDDLE OF SHORT POSITION.  NEED TO WAIT FOR THE EMAs TO CROSS AGAIN TO START OUR POSITION");
-            // }else{
+            if(cross_direction==0){
+                utils.log("BOT STARTED IN MIDDLE OF SHORT POSITION.  NEED TO WAIT FOR THE EMAs TO CROSS AGAIN TO START OUR POSITION");
+            }else{
                 utils.log("CROSSED DOWN ("+price+") ("+ema_val1+" "+ema_val2+")");
                 openShortPosition();
 
-            //}
+            }
             cross_direction = "down";
         }
     };
